@@ -460,7 +460,7 @@ $text-accent: #4ade80;
   }
 }
 
-.about-toggle {
+.auto-open-toggle {
   padding: 8px;
   border: none;
   border-radius: 50%;
@@ -480,10 +480,11 @@ $text-accent: #4ade80;
     background-color var(--transition-theme),
     border-color var(--transition-theme);
   position: relative;
+  margin-left: 8px;
 
   &:hover {
     transform: scale(1.1);
-    background: rgba(74, 222, 128, 0.1);
+    background: rgba(74, 222, 128, 0.2);
     border-color: rgba(74, 222, 128, 0.3);
   }
 
@@ -494,6 +495,29 @@ $text-accent: #4ade80;
   svg {
     color: var(--text-secondary);
     transition: $transition-quick;
+  }
+
+  .toggle-indicator {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: var(--accent);
+    color: white;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 8px;
+    line-height: 1;
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  &[aria-pressed='true'] {
+    .toggle-indicator {
+      background: #4caf50;
+      color: white;
+    }
   }
 }
 

@@ -4,6 +4,8 @@ import {
   calculateTimeFromAngle,
   calculateProgress,
   loadTimerState,
+  loadSettings,
+  saveSettings,
 } from '../../utils/timerUtils';
 import { getTimerProgressColor } from '../../utils/themeColors';
 import './PomodoroTimer.scss';
@@ -15,6 +17,7 @@ const PomodoroTimer = () => {
   const [customDuration, setCustomDuration] = useState(''); // for input field
   const [isCustomActive, setIsCustomActive] = useState(false);
   const [theme, setTheme] = useState('dark'); // Dark default as requested
+  const [autoOpenPopup, setAutoOpenPopup] = useState(true); // Auto-open on completion
   const debounceRef = useRef(null);
   const svgRef = useRef(null);
 
@@ -29,14 +32,15 @@ const PomodoroTimer = () => {
       setCustomDuration('');
       setIsCustomActive(false);
 
-      // Load theme preference
+      // Load theme and settings preferences
       try {
-        const result = await chrome.storage.sync.get(['theme']);
-        const savedTheme = result.theme || 'dark'; // Dark default as requested
-        setTheme(savedTheme);
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        const [settings] = await Promise.all([loadSettings()]);
+
+        setTheme(settings.theme);
+        setAutoOpenPopup(settings.autoOpenPopupOnComplete);
+        document.documentElement.setAttribute('data-theme', settings.theme);
       } catch (error) {
-        console.error('Failed to load theme:', error);
+        console.error('Failed to load settings:', error);
       }
     };
     loadState();
@@ -50,6 +54,13 @@ const PomodoroTimer = () => {
         setTimeRemaining(newState.timeRemaining);
         setIsRunning(newState.isRunning);
         setDuration(newState.duration);
+      }
+
+      if (namespace === 'sync' && changes.settings) {
+        const newSettings = changes.settings.newValue;
+        setTheme(newSettings.theme);
+        setAutoOpenPopup(newSettings.autoOpenPopupOnComplete);
+        document.documentElement.setAttribute('data-theme', newSettings.theme);
       }
     };
 
@@ -214,15 +225,33 @@ const PomodoroTimer = () => {
 
   const toggleTheme = useCallback(async () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
+    const updatedSettings = { theme: newTheme, autoOpenPopup };
+
     setTheme(newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
 
     try {
-      await chrome.storage.sync.set({ theme: newTheme });
+      await saveSettings(updatedSettings);
     } catch (error) {
-      console.error('Failed to save theme:', error);
+      console.error('Failed to save settings:', error);
     }
-  }, [theme]);
+  }, [theme, autoOpenPopup]);
+
+  const toggleAutoOpenPopup = useCallback(async () => {
+    const newAutoOpenPopup = !autoOpenPopup;
+    const updatedSettings = {
+      theme,
+      autoOpenPopupOnComplete: newAutoOpenPopup,
+    };
+
+    setAutoOpenPopup(newAutoOpenPopup);
+
+    try {
+      await saveSettings(updatedSettings);
+    } catch (error) {
+      console.error('Failed to save auto-open setting:', error);
+    }
+  }, [theme, autoOpenPopup]);
 
   const progress = calculateProgress(timeRemaining, duration * 60);
   const timerColor = getTimerProgressColor(progress);
@@ -414,6 +443,33 @@ const PomodoroTimer = () => {
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             )}
           </svg>
+        </button>
+
+        <button
+          className="auto-open-toggle"
+          onClick={toggleAutoOpenPopup}
+          aria-label={
+            autoOpenPopup ? 'Disable auto-open popup' : 'Enable auto-open popup'
+          }
+          aria-pressed={autoOpenPopup}
+          title={`Auto-open popup when timer completes: ${autoOpenPopup ? 'Enabled' : 'Disabled'}`}
+        >
+          <svg
+            className="icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg>
+          <span className="toggle-indicator">
+            {autoOpenPopup ? 'ON' : 'OFF'}
+          </span>
         </button>
       </div>
     </div>

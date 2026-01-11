@@ -33,13 +33,15 @@ export const saveTimerState = async (state) => {
 export const loadTimerState = async () => {
   try {
     const result = await chrome.storage.sync.get(['pomodoroState']);
-    return result.pomodoroState || {
-      duration: 25,
-      timeRemaining: 25 * 60,
-      isRunning: false,
-      startTime: null,
-      pausedTime: 0
-    };
+    return (
+      result.pomodoroState || {
+        duration: 25,
+        timeRemaining: 25 * 60,
+        isRunning: false,
+        startTime: null,
+        pausedTime: 0,
+      }
+    );
   } catch (error) {
     console.error('Error loading timer state:', error);
     return {
@@ -47,7 +49,7 @@ export const loadTimerState = async () => {
       timeRemaining: 25 * 60,
       isRunning: false,
       startTime: null,
-      pausedTime: 0
+      pausedTime: 0,
     };
   }
 };
@@ -69,6 +71,33 @@ export const showNotification = (title, message) => {
     type: 'basic',
     iconUrl: 'icons/icon-48.png',
     title,
-    message
+    message,
   });
+};
+
+// Settings utilities
+export const loadSettings = async () => {
+  try {
+    const result = await chrome.storage.sync.get(['settings']);
+    return (
+      result.settings || {
+        autoOpenPopupOnComplete: true,
+        theme: 'dark',
+      }
+    );
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    return {
+      autoOpenPopupOnComplete: true,
+      theme: 'dark',
+    };
+  }
+};
+
+export const saveSettings = async (settings) => {
+  try {
+    await chrome.storage.sync.set({ settings });
+  } catch (error) {
+    console.error('Error saving settings:', error);
+  }
 };

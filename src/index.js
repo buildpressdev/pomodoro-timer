@@ -134,8 +134,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     // Timer completed
     stopTimerUpdates();
 
-    chrome.storage.sync.get(['pomodoroState'], (result) => {
+    chrome.storage.sync.get(['pomodoroState', 'settings'], (result) => {
       const state = result.pomodoroState;
+      const settings = result.settings || {};
+
       if (state) {
         chrome.storage.sync.set({
           pomodoroState: {
@@ -145,14 +147,21 @@ chrome.alarms.onAlarm.addListener((alarm) => {
           },
         });
       }
-    });
 
-    // Show notification
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'icons/icon-48.png',
-      title: 'Timer Complete!',
-      message: 'Your Pomodoro session has ended.',
+      // Show notification
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon-48.png',
+        title: 'Timer Complete!',
+        message: 'Your Pomodoro session has ended.',
+      });
+
+      // Auto-open popup if setting is enabled
+      if (settings.autoOpenPopupOnComplete !== false) {
+        chrome.action.openPopup().catch(() => {
+          // Silently fail if popup can't open (e.g., browser restrictions)
+        });
+      }
     });
 
     updateBadge(0);
@@ -202,7 +211,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Extension installation
 chrome.runtime.onInstalled.addListener(() => {
-  // Initialize default state
+  // Initialize default state and settings
   chrome.storage.sync.set({
     pomodoroState: {
       duration: 25,
@@ -210,6 +219,10 @@ chrome.runtime.onInstalled.addListener(() => {
       isRunning: false,
       startTime: null,
       pausedTime: 0,
+    },
+    settings: {
+      autoOpenPopupOnComplete: true,
+      theme: 'dark',
     },
   });
 });
