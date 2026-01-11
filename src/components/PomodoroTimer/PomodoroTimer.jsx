@@ -3,10 +3,7 @@ import {
   formatTime,
   calculateTimeFromAngle,
   calculateProgress,
-  saveTimerState,
   loadTimerState,
-  updateBadge,
-  showNotification,
 } from '../../utils/timerUtils';
 import { getTimerProgressColor } from '../../utils/themeColors';
 import './PomodoroTimer.scss';
@@ -15,13 +12,10 @@ const PomodoroTimer = () => {
   const [duration, setDuration] = useState(25); // minutes
   const [timeRemaining, setTimeRemaining] = useState(25 * 60); // seconds
   const [isRunning, setIsRunning] = useState(false);
-  const [startTime, setStartTime] = useState(null);
-  const [pausedTime, setPausedTime] = useState(0);
   const [customDuration, setCustomDuration] = useState(''); // for input field
   const [isCustomActive, setIsCustomActive] = useState(false);
   const [theme, setTheme] = useState('dark'); // Dark default as requested
   const debounceRef = useRef(null);
-  const intervalRef = useRef(null);
   const svgRef = useRef(null);
 
   // Load saved state and theme on mount
@@ -32,8 +26,6 @@ const PomodoroTimer = () => {
       setDuration(state.duration);
       setTimeRemaining(state.timeRemaining);
       setIsRunning(state.isRunning);
-      setStartTime(state.startTime);
-      setPausedTime(state.pausedTime || 0);
       setCustomDuration('');
       setIsCustomActive(false);
 
@@ -46,54 +38,27 @@ const PomodoroTimer = () => {
       } catch (error) {
         console.error('Failed to load theme:', error);
       }
-
-      // Update badge
-      updateBadge(state.timeRemaining);
     };
     loadState();
   }, []);
 
-  // Save state whenever it changes
+  // Listen for storage updates from background script
   useEffect(() => {
-    const state = {
-      duration,
-      timeRemaining,
-      isRunning,
-      startTime,
-      pausedTime,
-    };
-    saveTimerState(state);
-    updateBadge(timeRemaining);
-  }, [duration, timeRemaining, isRunning, startTime, pausedTime]);
-
-  // Timer countdown logic
-  useEffect(() => {
-    if (isRunning && timeRemaining > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            showNotification(
-              'Timer Complete!',
-              'Your Pomodoro session has ended.'
-            );
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+    const handleStorageChange = (changes, namespace) => {
+      if (namespace === 'sync' && changes.pomodoroState) {
+        const newState = changes.pomodoroState.newValue;
+        setTimeRemaining(newState.timeRemaining);
+        setIsRunning(newState.isRunning);
+        setDuration(newState.duration);
       }
-    }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      chrome.storage.onChanged.removeListener(handleStorageChange);
     };
-  }, [isRunning, timeRemaining]);
+  }, []);
 
   const handleCircleClick = useCallback(
     (event) => {
@@ -121,28 +86,74 @@ const PomodoroTimer = () => {
     [isRunning, duration]
   );
 
-  const handleStart = useCallback(() => {
-    if (timeRemaining === 0) {
-      // Reset timer if it's done
-      setTimeRemaining(duration * 60);
+  const handleStart = useCallback(async () => {
+    const startTimeValue = timeRemaining === 0 ? duration * 60 : timeRemaining;
+
+    try {
+      // Update state first
+      await chrome.storage.sync.set({
+        pomodoroState: {
+          duration,
+          timeRemaining: startTimeValue,
+          isRunning: true,
+          startTime: Date.now(),
+          pausedTime: 0,
+        },
+      });
+
+      // Send message to background script to start timer
+      chrome.runtime.sendMessage(
+        {
+          action: 'startTimer',
+          timeRemaining: startTimeValue,
+        },
+        (response) => {
+          if (response && response.success) {
+            setTimeRemaining(startTimeValue);
+            setIsRunning(true);
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error starting timer:', error);
     }
-    setIsRunning(true);
-    setStartTime(Date.now());
-    setPausedTime(0);
   }, [duration, timeRemaining]);
 
-  const handleStop = useCallback(() => {
-    setIsRunning(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+  const handleStop = useCallback(async () => {
+    try {
+      // Send message to background script to stop timer
+      chrome.runtime.sendMessage(
+        {
+          action: 'stopTimer',
+        },
+        (response) => {
+          if (response && response.success) {
+            setIsRunning(false);
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error stopping timer:', error);
     }
   }, []);
 
-  const handleReset = useCallback(() => {
-    setIsRunning(false);
-    setTimeRemaining(duration * 60);
-    setStartTime(null);
-    setPausedTime(0);
+  const handleReset = useCallback(async () => {
+    try {
+      // Send message to background script to reset timer
+      chrome.runtime.sendMessage(
+        {
+          action: 'resetTimer',
+        },
+        (response) => {
+          if (response && response.success) {
+            setTimeRemaining(duration * 60);
+            setIsRunning(false);
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error resetting timer:', error);
+    }
   }, [duration]);
 
   const handleCustomDurationChange = useCallback((e) => {
@@ -158,11 +169,26 @@ const PomodoroTimer = () => {
       }
 
       // Debounce the timer update
-      debounceRef.current = setTimeout(() => {
+      debounceRef.current = setTimeout(async () => {
         const minutes = parseInt(value, 10);
         if (minutes >= 1 && minutes <= 180) {
-          setDuration(minutes);
-          setTimeRemaining(minutes * 60);
+          try {
+            // Update duration in storage
+            await chrome.storage.sync.set({
+              pomodoroState: {
+                duration: minutes,
+                timeRemaining: minutes * 60,
+                isRunning: false,
+                startTime: null,
+                pausedTime: 0,
+              },
+            });
+
+            setDuration(minutes);
+            setTimeRemaining(minutes * 60);
+          } catch (error) {
+            console.error('Error setting custom duration:', error);
+          }
         } else if (value === '') {
           setIsCustomActive(false);
         }
@@ -304,12 +330,27 @@ const PomodoroTimer = () => {
           {[5, 15, 25, 45, 60].map((mins) => (
             <button
               key={mins}
-              onClick={() => {
+              onClick={async () => {
                 if (!isRunning) {
-                  setDuration(mins);
-                  setTimeRemaining(mins * 60);
-                  setCustomDuration('');
-                  setIsCustomActive(false);
+                  try {
+                    // Update duration in storage
+                    await chrome.storage.sync.set({
+                      pomodoroState: {
+                        duration: mins,
+                        timeRemaining: mins * 60,
+                        isRunning: false,
+                        startTime: null,
+                        pausedTime: 0,
+                      },
+                    });
+
+                    setDuration(mins);
+                    setTimeRemaining(mins * 60);
+                    setCustomDuration('');
+                    setIsCustomActive(false);
+                  } catch (error) {
+                    console.error('Error setting duration:', error);
+                  }
                 }
               }}
               className={`quick-btn ${duration === mins && !isCustomActive ? 'active' : ''}`}

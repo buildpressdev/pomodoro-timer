@@ -1,4 +1,5 @@
-let timerInterval = null;
+// Background timer management using Chrome Alarms API
+const ALARM_NAME = 'pomodoroTimer';
 
 // Load timer state and continue countdown if needed
 const initializeTimer = async () => {
@@ -15,7 +16,7 @@ const initializeTimer = async () => {
       );
 
       if (actualTimeRemaining > 0) {
-        // Update state and continue timer
+        // Update state and continue timer with alarm
         chrome.storage.sync.set({
           pomodoroState: {
             ...state,
@@ -23,8 +24,8 @@ const initializeTimer = async () => {
           },
         });
 
-        // Start background timer
-        startBackgroundTimer(actualTimeRemaining);
+        // Start background timer using alarms
+        startBackgroundAlarm(actualTimeRemaining);
         updateBadge(actualTimeRemaining);
       } else {
         // Timer completed while popup was closed
@@ -51,15 +52,37 @@ const initializeTimer = async () => {
   }
 };
 
-const startBackgroundTimer = (initialTime) => {
-  let timeRemaining = initialTime;
+// Start background timer using Chrome Alarms API
+const startBackgroundAlarm = (timeRemaining) => {
+  // Clear any existing alarm
+  chrome.alarms.clear(ALARM_NAME);
 
+  // Create alarm for timer completion
+  chrome.alarms.create(ALARM_NAME, {
+    delayInMinutes: timeRemaining / 60, // Convert seconds to minutes
+    periodInMinutes: undefined, // One-time alarm
+  });
+
+  // Start periodic updates for badge and storage
+  updateTimerPeriodically(timeRemaining);
+};
+
+// Clear background alarm
+const clearBackgroundAlarm = () => {
+  chrome.alarms.clear(ALARM_NAME);
+};
+
+// Update timer periodically (every second) for badge and storage
+let updateInterval = null;
+const updateTimerPeriodically = (initialTime) => {
   // Clear any existing interval
-  if (timerInterval) {
-    clearInterval(timerInterval);
+  if (updateInterval) {
+    clearInterval(updateInterval);
   }
 
-  timerInterval = setInterval(() => {
+  let timeRemaining = initialTime;
+
+  updateInterval = setInterval(() => {
     timeRemaining--;
 
     updateBadge(timeRemaining);
@@ -78,36 +101,21 @@ const startBackgroundTimer = (initialTime) => {
     });
 
     if (timeRemaining <= 0) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-
-      // Update state to stopped
-      chrome.storage.sync.get(['pomodoroState'], (result) => {
-        const state = result.pomodoroState;
-        if (state) {
-          chrome.storage.sync.set({
-            pomodoroState: {
-              ...state,
-              isRunning: false,
-              timeRemaining: 0,
-            },
-          });
-        }
-      });
-
-      // Show notification
-      chrome.notifications.create({
-        type: 'basic',
-        iconUrl: 'icons/icon-48.png',
-        title: 'Timer Complete!',
-        message: 'Your Pomodoro session has ended.',
-      });
-
-      updateBadge(0);
+      clearInterval(updateInterval);
+      updateInterval = null;
     }
   }, 1000);
 };
 
+// Stop timer updates
+const stopTimerUpdates = () => {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+    updateInterval = null;
+  }
+};
+
+// Update badge with current time
 const updateBadge = (timeRemaining) => {
   if (timeRemaining > 0) {
     const mins = Math.floor(timeRemaining / 60);
@@ -120,10 +128,80 @@ const updateBadge = (timeRemaining) => {
   }
 };
 
+// Handle alarm events
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === ALARM_NAME) {
+    // Timer completed
+    stopTimerUpdates();
+
+    chrome.storage.sync.get(['pomodoroState'], (result) => {
+      const state = result.pomodoroState;
+      if (state) {
+        chrome.storage.sync.set({
+          pomodoroState: {
+            ...state,
+            isRunning: false,
+            timeRemaining: 0,
+          },
+        });
+      }
+    });
+
+    // Show notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon-48.png',
+      title: 'Timer Complete!',
+      message: 'Your Pomodoro session has ended.',
+    });
+
+    updateBadge(0);
+  }
+});
+
+// Handle messages from popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'startTimer') {
+    const { timeRemaining } = request;
+    startBackgroundAlarm(timeRemaining);
+    sendResponse({ success: true });
+  } else if (request.action === 'stopTimer') {
+    clearBackgroundAlarm();
+    stopTimerUpdates();
+    chrome.storage.sync.get(['pomodoroState'], (result) => {
+      const state = result.pomodoroState;
+      if (state) {
+        chrome.storage.sync.set({
+          pomodoroState: {
+            ...state,
+            isRunning: false,
+          },
+        });
+      }
+    });
+    sendResponse({ success: true });
+  } else if (request.action === 'resetTimer') {
+    clearBackgroundAlarm();
+    stopTimerUpdates();
+    chrome.storage.sync.get(['pomodoroState'], (result) => {
+      const state = result.pomodoroState;
+      if (state) {
+        chrome.storage.sync.set({
+          pomodoroState: {
+            ...state,
+            isRunning: false,
+            timeRemaining: state.duration * 60,
+          },
+        });
+        updateBadge(state.duration * 60);
+      }
+    });
+    sendResponse({ success: true });
+  }
+});
+
 // Extension installation
 chrome.runtime.onInstalled.addListener(() => {
-  // Pomodoro Timer Extension installed
-
   // Initialize default state
   chrome.storage.sync.set({
     pomodoroState: {
@@ -140,21 +218,6 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onStartup.addListener(() => {
   initializeTimer();
 });
-
-// Handle alarm from timer completion (if available)
-if (chrome.alarms && chrome.alarms.onAlarm) {
-  chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === 'pomodoroTimer') {
-      chrome.notifications.create({
-        type: 'basic',
-        iconUrl: 'icons/icon-48.png',
-        title: 'Timer Complete!',
-        message: 'Your Pomodoro session has ended.',
-      });
-      updateBadge(0);
-    }
-  });
-}
 
 // Initialize on first load
 initializeTimer();
