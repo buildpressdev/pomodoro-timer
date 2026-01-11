@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "build": "webpack --mode production",
-    "dev": "webpack --mode development --watch",
-    "start": "webpack --mode development --watch",
+    "dev": "webpack serve --mode development --watch",
+    "start": "npm run dev",
     "lint": "eslint src --ext .js,.jsx",
     "lint:fix": "eslint src --ext .js,.jsx --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,css,html}\""
@@ -40,7 +40,9 @@
     "prettier": "^3.0.0",
     "style-loader": "^3.3.0",
     "webpack": "^5.88.0",
-    "webpack-cli": "^5.1.0"
+    "webpack-cli": "^5.1.0",
+    "webpack-dev-server": "^5.2.2",
+    "webpack-hot-middleware": "^2.26.1"
   },
   "eslintConfig": {
     "extends": [

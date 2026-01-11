@@ -2,7 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = {
+module.exports = (env, argv) => ({
   entry: {
     popup: './src/popup.js',
     index: './src/index.js',
@@ -50,10 +50,29 @@ module.exports = {
         { from: 'public/icons', to: 'icons' },
       ],
     }),
-  ],
+    ],
   resolve: {
     extensions: ['.js', '.jsx', '.scss', '.css'],
   },
   mode: process.env.NODE_ENV || 'development',
   devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
-};
+  target: 'web',
+  
+  stats: {
+    colors: true,
+    chunks: false
+  },
+  
+  devServer: {
+    static: path.join(__dirname, 'dist'),
+    port: 3000,
+    hot: true,
+    open: false,
+    historyApiFallback: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
+  },
+});
