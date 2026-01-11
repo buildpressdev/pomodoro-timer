@@ -9,7 +9,7 @@ import {
   updateBadge,
   showNotification
 } from '../../utils/timerUtils';
-import './PomodoroTimer.css';
+import './PomodoroTimer.scss';
 
 const PomodoroTimer = () => {
   const [duration, setDuration] = useState(25); // minutes
@@ -147,7 +147,7 @@ const PomodoroTimer = () => {
             cy="110"
             r="100"
             fill="none"
-            stroke="#e0e0e0"
+            stroke="rgba(255, 255, 255, 0.1)"
             strokeWidth="8"
           />
           
@@ -174,7 +174,8 @@ const PomodoroTimer = () => {
             dominantBaseline="middle"
             fontSize="28"
             fontWeight="bold"
-            fill="#333"
+            fill="white"
+            textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
           >
             {formattedTime}
           </text>
@@ -187,7 +188,8 @@ const PomodoroTimer = () => {
               textAnchor="middle"
               dominantBaseline="middle"
               fontSize="12"
-              fill="#666"
+              fill="rgba(255, 255, 255, 0.8)"
+              textShadow="0 1px 2px rgba(0, 0, 0, 0.3)"
             >
               Click to set: {duration} min
             </text>
@@ -197,16 +199,16 @@ const PomodoroTimer = () => {
 
       <div className="timer-controls">
         {!isRunning ? (
+          <button onClick={handleStop} className="btn btn-stop">
+            Stop
+          </button>
+        ) : (
           <button 
             onClick={handleStart}
             className="btn btn-start"
             disabled={timeRemaining === 0 && duration === 0}
           >
             {timeRemaining === 0 ? 'Start' : 'Start'}
-          </button>
-        ) : (
-          <button onClick={handleStop} className="btn btn-stop">
-            Stop
           </button>
         )}
         
