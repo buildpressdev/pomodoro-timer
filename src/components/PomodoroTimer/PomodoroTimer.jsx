@@ -142,7 +142,6 @@ const PomodoroTimer = () => {
   }, [duration, timeRemaining]);
 
   const handleStop = useCallback(() => {
-    console.log('Stop button clicked');
     setIsRunning(false);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -150,7 +149,6 @@ const PomodoroTimer = () => {
   }, []);
 
   const handleReset = useCallback(() => {
-    console.log('Reset button clicked');
     setIsRunning(false);
     setTimeRemaining(duration * 60);
     setStartTime(null);

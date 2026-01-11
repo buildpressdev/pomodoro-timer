@@ -5,21 +5,24 @@ const initializeTimer = async () => {
   try {
     const result = await chrome.storage.sync.get(['pomodoroState']);
     const state = result.pomodoroState;
-    
+
     if (state && state.isRunning && state.timeRemaining > 0) {
       // Calculate time elapsed since popup was closed
       const timeElapsed = Math.floor((Date.now() - state.startTime) / 1000);
-      const actualTimeRemaining = Math.max(0, state.timeRemaining - timeElapsed);
-      
+      const actualTimeRemaining = Math.max(
+        0,
+        state.timeRemaining - timeElapsed
+      );
+
       if (actualTimeRemaining > 0) {
         // Update state and continue timer
         chrome.storage.sync.set({
           pomodoroState: {
             ...state,
-            timeRemaining: actualTimeRemaining
-          }
+            timeRemaining: actualTimeRemaining,
+          },
         });
-        
+
         // Start background timer
         startBackgroundTimer(actualTimeRemaining);
         updateBadge(actualTimeRemaining);
@@ -29,17 +32,17 @@ const initializeTimer = async () => {
           pomodoroState: {
             ...state,
             isRunning: false,
-            timeRemaining: 0
-          }
+            timeRemaining: 0,
+          },
         });
-        
+
         chrome.notifications.create({
           type: 'basic',
           iconUrl: 'icons/icon-48.png',
           title: 'Timer Complete!',
           message: 'Your Pomodoro session has ended.',
         });
-        
+
         updateBadge(0);
       }
     }
@@ -50,17 +53,17 @@ const initializeTimer = async () => {
 
 const startBackgroundTimer = (initialTime) => {
   let timeRemaining = initialTime;
-  
+
   // Clear any existing interval
   if (timerInterval) {
     clearInterval(timerInterval);
   }
-  
+
   timerInterval = setInterval(() => {
     timeRemaining--;
-    
+
     updateBadge(timeRemaining);
-    
+
     // Update storage with current time
     chrome.storage.sync.get(['pomodoroState'], (result) => {
       const state = result.pomodoroState;
@@ -68,16 +71,16 @@ const startBackgroundTimer = (initialTime) => {
         chrome.storage.sync.set({
           pomodoroState: {
             ...state,
-            timeRemaining
-          }
+            timeRemaining,
+          },
         });
       }
     });
-    
+
     if (timeRemaining <= 0) {
       clearInterval(timerInterval);
       timerInterval = null;
-      
+
       // Update state to stopped
       chrome.storage.sync.get(['pomodoroState'], (result) => {
         const state = result.pomodoroState;
@@ -86,12 +89,12 @@ const startBackgroundTimer = (initialTime) => {
             pomodoroState: {
               ...state,
               isRunning: false,
-              timeRemaining: 0
-            }
+              timeRemaining: 0,
+            },
           });
         }
       });
-      
+
       // Show notification
       chrome.notifications.create({
         type: 'basic',
@@ -99,7 +102,7 @@ const startBackgroundTimer = (initialTime) => {
         title: 'Timer Complete!',
         message: 'Your Pomodoro session has ended.',
       });
-      
+
       updateBadge(0);
     }
   }, 1000);
@@ -119,8 +122,8 @@ const updateBadge = (timeRemaining) => {
 
 // Extension installation
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Pomodoro Timer Extension installed');
-  
+  // Pomodoro Timer Extension installed
+
   // Initialize default state
   chrome.storage.sync.set({
     pomodoroState: {
@@ -128,8 +131,8 @@ chrome.runtime.onInstalled.addListener(() => {
       timeRemaining: 25 * 60,
       isRunning: false,
       startTime: null,
-      pausedTime: 0
-    }
+      pausedTime: 0,
+    },
   });
 });
 
