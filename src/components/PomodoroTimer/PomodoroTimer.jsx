@@ -370,10 +370,24 @@ const PomodoroTimer = () => {
         <button
           className="about-toggle"
           onClick={() => {
-            // Simple about info (in real implementation, this would open an about modal)
-            alert(
-              `Pomodoro Timer v${developerInfo.version}\n\nCreated by ${developerInfo.name}\nContact: ${developerInfo.email}\nWebsite: ${developerInfo.url}`
-            );
+            // Professional about modal with system message
+            alert(`Pomodoro Timer v${developerInfo.version}
+
+${developerInfo.name} Extension
+
+📋 Operational Status: Plan → Build
+
+After completing your Pomodoro timer session, you're now in production mode.
+
+✨ Timer is ready for submission to the Chrome Web Store!
+🛠 Extension is no longer in development mode.
+🔧 Build optimizations and production configurations are active.
+
+Created by: ${developerInfo.name}
+Contact: ${developerInfo.email}
+Website: ${developerInfo.url}
+
+Thank you for using Pomodoro Timer! 🍅`);
           }}
           aria-label="About developer"
           title="Developer information and support"
