@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { 
-  formatTime, 
-  calculateTimeFromAngle, 
-  calculateProgress, 
+import {
+  formatTime,
+  calculateTimeFromAngle,
+  calculateProgress,
   getTimerColor,
   saveTimerState,
   loadTimerState,
   updateBadge,
-  showNotification
+  showNotification,
 } from '../../utils/timerUtils';
 import './PomodoroTimer.scss';
 
@@ -17,6 +17,7 @@ const PomodoroTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [pausedTime, setPausedTime] = useState(0);
+  const [customDuration, setCustomDuration] = useState(''); // for input field
   const intervalRef = useRef(null);
   const svgRef = useRef(null);
 
@@ -29,7 +30,8 @@ const PomodoroTimer = () => {
       setIsRunning(state.isRunning);
       setStartTime(state.startTime);
       setPausedTime(state.pausedTime || 0);
-      
+      setCustomDuration('');
+
       // Update badge
       updateBadge(state.timeRemaining);
     };
@@ -43,7 +45,7 @@ const PomodoroTimer = () => {
       timeRemaining,
       isRunning,
       startTime,
-      pausedTime
+      pausedTime,
     };
     saveTimerState(state);
     updateBadge(timeRemaining);
@@ -56,7 +58,10 @@ const PomodoroTimer = () => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             setIsRunning(false);
-            showNotification('Timer Complete!', 'Your Pomodoro session has ended.');
+            showNotification(
+              'Timer Complete!',
+              'Your Pomodoro session has ended.'
+            );
             return 0;
           }
           return prev - 1;
@@ -75,27 +80,31 @@ const PomodoroTimer = () => {
     };
   }, [isRunning, timeRemaining]);
 
-  const handleCircleClick = useCallback((event) => {
-    if (isRunning) return; // Don't allow time changes while running
+  const handleCircleClick = useCallback(
+    (event) => {
+      if (isRunning) return; // Don't allow time changes while running
 
-    const svg = svgRef.current;
-    if (!svg) return;
+      const svg = svgRef.current;
+      if (!svg) return;
 
-    const rect = svg.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const x = event.clientX - rect.left - centerX;
-    const y = event.clientY - rect.top - centerY;
+      const rect = svg.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const x = event.clientX - rect.left - centerX;
+      const y = event.clientY - rect.top - centerY;
 
-    // Calculate angle from -90 degrees (top) in radians
-    let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
-    if (angle < 0) angle += 360;
+      // Calculate angle from -90 degrees (top) in radians
+      let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+      if (angle < 0) angle += 360;
 
-    // Convert angle to minutes
-    const newDuration = calculateTimeFromAngle(angle);
-    setDuration(newDuration);
-    setTimeRemaining(newDuration * 60);
-  }, [isRunning]);
+      // Convert angle to minutes (use max of 60 for circle, or current duration if higher)
+      const maxMinutes = Math.max(60, duration);
+      const newDuration = calculateTimeFromAngle(angle, maxMinutes);
+      setDuration(newDuration);
+      setTimeRemaining(newDuration * 60);
+    },
+    [isRunning]
+  );
 
   const handleStart = useCallback(() => {
     if (timeRemaining === 0) {
@@ -108,6 +117,7 @@ const PomodoroTimer = () => {
   }, [duration, timeRemaining]);
 
   const handleStop = useCallback(() => {
+    console.log('Stop button clicked');
     setIsRunning(false);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -115,11 +125,28 @@ const PomodoroTimer = () => {
   }, []);
 
   const handleReset = useCallback(() => {
+    console.log('Reset button clicked');
     setIsRunning(false);
     setTimeRemaining(duration * 60);
     setStartTime(null);
     setPausedTime(0);
   }, [duration]);
+
+  const handleCustomDurationSet = useCallback(() => {
+    const minutes = parseInt(customDuration, 10);
+    if (minutes >= 1 && minutes <= 180) {
+      setDuration(minutes);
+      setTimeRemaining(minutes * 60);
+      setCustomDuration('');
+    }
+  }, [customDuration]);
+
+  const handleCustomDurationChange = useCallback((e) => {
+    const value = e.target.value;
+    if (value === '' || /^\d+$/.test(value)) {
+      setCustomDuration(value);
+    }
+  }, []);
 
   const progress = calculateProgress(timeRemaining, duration * 60);
   const timerColor = getTimerColor(progress);
@@ -130,7 +157,7 @@ const PomodoroTimer = () => {
       <div className="pomodoro-header">
         <h3>Pomodoro Timer</h3>
       </div>
-      
+
       <div className="timer-display">
         <svg
           ref={svgRef}
@@ -150,7 +177,7 @@ const PomodoroTimer = () => {
             stroke="rgba(255, 255, 255, 0.1)"
             strokeWidth="8"
           />
-          
+
           {/* Progress circle */}
           <circle
             cx="110"
@@ -165,7 +192,7 @@ const PomodoroTimer = () => {
             transform="rotate(-90 110 110)"
             className="progress-circle"
           />
-          
+
           {/* Time text */}
           <text
             x="110"
@@ -179,7 +206,7 @@ const PomodoroTimer = () => {
           >
             {formattedTime}
           </text>
-          
+
           {/* Duration text when not running */}
           {!isRunning && (
             <text
@@ -190,20 +217,18 @@ const PomodoroTimer = () => {
               fontSize="12"
               fill="rgba(255, 255, 255, 0.8)"
               textShadow="0 1px 2px rgba(0, 0, 0, 0.3)"
-            >
-              Click to set: {duration} min
-            </text>
+            ></text>
           )}
         </svg>
       </div>
 
       <div className="timer-controls">
-        {!isRunning ? (
+        {isRunning ? (
           <button onClick={handleStop} className="btn btn-stop">
             Stop
           </button>
         ) : (
-          <button 
+          <button
             onClick={handleStart}
             className="btn btn-start"
             disabled={timeRemaining === 0 && duration === 0}
@@ -211,7 +236,7 @@ const PomodoroTimer = () => {
             {timeRemaining === 0 ? 'Start' : 'Start'}
           </button>
         )}
-        
+
         <button onClick={handleReset} className="btn btn-reset">
           Reset
         </button>
@@ -236,11 +261,40 @@ const PomodoroTimer = () => {
             </button>
           ))}
         </div>
+
+        <div className="custom-duration">
+          <div className="custom-duration-label">Custom:</div>
+          <div className="custom-duration-controls">
+            <input
+              type="text"
+              value={customDuration}
+              onChange={handleCustomDurationChange}
+              placeholder="min"
+              className="custom-duration-input"
+              disabled={isRunning}
+              min="1"
+              max="180"
+            />
+            <button
+              onClick={handleCustomDurationSet}
+              className="btn btn-custom"
+              disabled={
+                isRunning ||
+                !customDuration ||
+                parseInt(customDuration, 10) < 1 ||
+                parseInt(customDuration, 10) > 180
+              }
+            >
+              Set
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="pomodoro-footer">
         <div className="status">
-          Status: <span className={`status-${isRunning ? 'running' : 'stopped'}`}>
+          Status:{' '}
+          <span className={`status-${isRunning ? 'running' : 'stopped'}`}>
             {isRunning ? 'Running' : 'Stopped'}
           </span>
         </div>
