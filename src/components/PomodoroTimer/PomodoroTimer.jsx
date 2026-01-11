@@ -18,12 +18,16 @@ const PomodoroTimer = () => {
   const [startTime, setStartTime] = useState(null);
   const [pausedTime, setPausedTime] = useState(0);
   const [customDuration, setCustomDuration] = useState(''); // for input field
+  const [isCustomActive, setIsCustomActive] = useState(false);
+  const [theme, setTheme] = useState('dark'); // Dark default as requested
+  const debounceRef = useRef(null);
   const intervalRef = useRef(null);
   const svgRef = useRef(null);
 
-  // Load saved state on mount
+  // Load saved state and theme on mount
   useEffect(() => {
     const loadState = async () => {
+      // Load timer state
       const state = await loadTimerState();
       setDuration(state.duration);
       setTimeRemaining(state.timeRemaining);
@@ -31,11 +35,31 @@ const PomodoroTimer = () => {
       setStartTime(state.startTime);
       setPausedTime(state.pausedTime || 0);
       setCustomDuration('');
+      setIsCustomActive(false);
+
+      // Load theme preference
+      try {
+        const result = await chrome.storage.sync.get(['theme']);
+        const savedTheme = result.theme || 'dark'; // Dark default as requested
+        setTheme(savedTheme);
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch (error) {
+        console.error('Failed to load theme:', error);
+      }
 
       // Update badge
       updateBadge(state.timeRemaining);
     };
     loadState();
+  }, []);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, []);
 
   // Save state whenever it changes
@@ -132,21 +156,58 @@ const PomodoroTimer = () => {
     setPausedTime(0);
   }, [duration]);
 
-  const handleCustomDurationSet = useCallback(() => {
-    const minutes = parseInt(customDuration, 10);
-    if (minutes >= 1 && minutes <= 180) {
-      setDuration(minutes);
-      setTimeRemaining(minutes * 60);
-      setCustomDuration('');
+  const handleCustomDurationChange = useCallback((e) => {
+    const value = e.target.value;
+
+    if (value === '' || /^\d+$/.test(value)) {
+      setCustomDuration(value);
+      setIsCustomActive(true);
+
+      // Clear existing debounce
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      // Debounce the timer update
+      debounceRef.current = setTimeout(() => {
+        const minutes = parseInt(value, 10);
+        if (minutes >= 1 && minutes <= 180) {
+          setDuration(minutes);
+          setTimeRemaining(minutes * 60);
+        } else if (value === '') {
+          setIsCustomActive(false);
+        }
+      }, 300);
+    }
+  }, []);
+
+  const handleCustomDurationBlur = useCallback(() => {
+    // Clear any pending debounce
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    // Reset input if empty after blur
+    if (customDuration === '') {
+      setIsCustomActive(false);
     }
   }, [customDuration]);
 
-  const handleCustomDurationChange = useCallback((e) => {
-    const value = e.target.value;
-    if (value === '' || /^\d+$/.test(value)) {
-      setCustomDuration(value);
-    }
+  const handleCustomDurationFocus = useCallback((e) => {
+    e.target.select(); // Auto-select all text when focused
   }, []);
+
+  const toggleTheme = useCallback(async () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+
+    try {
+      await chrome.storage.sync.set({ theme: newTheme });
+    } catch (error) {
+      console.error('Failed to save theme:', error);
+    }
+  }, [theme]);
 
   const progress = calculateProgress(timeRemaining, duration * 60);
   const timerColor = getTimerColor(progress);
@@ -252,42 +313,29 @@ const PomodoroTimer = () => {
                 if (!isRunning) {
                   setDuration(mins);
                   setTimeRemaining(mins * 60);
+                  setCustomDuration('');
+                  setIsCustomActive(false);
                 }
               }}
-              className={`quick-btn ${duration === mins ? 'active' : ''}`}
+              className={`quick-btn ${duration === mins && !isCustomActive ? 'active' : ''}`}
               disabled={isRunning}
             >
               {mins}m
             </button>
           ))}
-        </div>
 
-        <div className="custom-duration">
-          <div className="custom-duration-label">Custom:</div>
-          <div className="custom-duration-controls">
-            <input
-              type="text"
-              value={customDuration}
-              onChange={handleCustomDurationChange}
-              placeholder="min"
-              className="custom-duration-input"
-              disabled={isRunning}
-              min="1"
-              max="180"
-            />
-            <button
-              onClick={handleCustomDurationSet}
-              className="btn btn-custom"
-              disabled={
-                isRunning ||
-                !customDuration ||
-                parseInt(customDuration, 10) < 1 ||
-                parseInt(customDuration, 10) > 180
-              }
-            >
-              Set
-            </button>
-          </div>
+          <input
+            type="text"
+            value={customDuration}
+            onChange={handleCustomDurationChange}
+            onBlur={handleCustomDurationBlur}
+            onFocus={handleCustomDurationFocus}
+            placeholder="Custom"
+            className={`quick-btn quick-btn-input ${isCustomActive ? 'active custom-active' : ''}`}
+            disabled={isRunning}
+            min="1"
+            max="180"
+          />
         </div>
       </div>
 
@@ -298,6 +346,42 @@ const PomodoroTimer = () => {
             {isRunning ? 'Running' : 'Stopped'}
           </span>
         </div>
+
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          aria-pressed={theme === 'light'}
+          title={`Current: ${theme} mode. Click to switch to ${theme === 'dark' ? 'light' : 'dark'} mode.`}
+        >
+          <svg
+            className={`icon ${theme === 'dark' ? 'sun-icon' : 'moon-icon'}`}
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            {theme === 'dark' ? (
+              // Sun icon
+              <g>
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </g>
+            ) : (
+              // Moon icon
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            )}
+          </svg>
+        </button>
       </div>
     </div>
   );
