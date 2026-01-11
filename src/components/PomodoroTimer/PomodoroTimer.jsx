@@ -9,6 +9,7 @@ import {
   updateBadge,
   showNotification,
 } from '../../utils/timerUtils';
+import { getThemeColors, getTimerProgressColor } from '../../utils/themeColors';
 import './PomodoroTimer.scss';
 
 const PomodoroTimer = () => {
@@ -210,7 +211,8 @@ const PomodoroTimer = () => {
   }, [theme]);
 
   const progress = calculateProgress(timeRemaining, duration * 60);
-  const timerColor = getTimerColor(progress);
+  const timerColor = getTimerProgressColor(progress);
+  const themeColors = getThemeColors(theme);
   const formattedTime = formatTime(timeRemaining);
 
   return (
@@ -260,10 +262,14 @@ const PomodoroTimer = () => {
             y="110"
             textAnchor="middle"
             dominantBaseline="middle"
-            fontSize="28"
+            fontSize={theme === 'light' ? '32' : '28'}
             fontWeight="bold"
-            fill="#ffffff"
-            textShadow="0 2px 5px rgba(0, 0, 0, 0.8)"
+            fill={theme === 'light' ? '#0f0f23' : '#ffffff'}
+            textShadow={
+              theme === 'light'
+                ? '0 1px 3px rgba(0, 0, 0, 0.2)'
+                : '0 2px 5px rgba(0, 0, 0, 0.8)'
+            }
           >
             {formattedTime}
           </text>
@@ -276,8 +282,16 @@ const PomodoroTimer = () => {
               textAnchor="middle"
               dominantBaseline="middle"
               fontSize="12"
-              fill="rgba(255, 255, 255, 0.8)"
-              textShadow="0 1px 2px rgba(0, 0, 0, 0.3)"
+              fill={
+                theme === 'light'
+                  ? 'rgba(0, 0, 0, 0.6)'
+                  : 'rgba(255, 255, 255, 0.8)'
+              }
+              textShadow={
+                theme === 'light'
+                  ? '0 1px 2px rgba(0, 0, 0, 0.1)'
+                  : '0 1px 2px rgba(0, 0, 0, 0.3)'
+              }
             ></text>
           )}
         </svg>
@@ -304,7 +318,7 @@ const PomodoroTimer = () => {
       </div>
 
       <div className="quick-select">
-        <div className="quick-select-label">Quick Set:</div>
+        <div className="quick-select-label">Quick Set</div>
         <div className="quick-select-buttons">
           {[5, 15, 25, 45, 60].map((mins) => (
             <button
