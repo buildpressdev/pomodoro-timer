@@ -1,3 +1,34 @@
+// Dark Glassmorphism Design Variables - High Contrast Theme
+$glass-bg-dark: rgba(0, 0, 0, 0.25);
+$glass-bg-vibrant-dark: linear-gradient(
+  135deg,
+  rgba(0, 0, 20, 0.3) 0%,
+  rgba(20, 0, 40, 0.25) 50%,
+  rgba(0, 20, 80, 0.2) 100%
+);
+
+$glass-border-dark: rgba(255, 255, 255, 0.1);
+$glass-blur: 12px;
+$glass-blur-strong: 20px;
+$glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.4);
+$glass-shadow-dark-vibrant:
+  0 8px 32px rgba(0, 0, 20, 0.2),
+  0 4px 16px rgba(20, 0, 40, 0.15),
+  0 2px 8px rgba(0, 20, 80, 0.1);
+
+// Dark Gradient Backgrounds
+$gradient-dark-1: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+$gradient-dark-2: linear-gradient(120deg, #1f1f3a 0%, #2d2d44 100%);
+$gradient-dark-3: linear-gradient(120deg, #16213e 0%, #1f2937 100%);
+$gradient-dark-4: linear-gradient(160deg, #0d1117 0%, #1a1a2e 100%);
+
+// High Contrast Colors
+$text-primary: #ffffff;
+$text-secondary: #e0e0e0;
+$text-accent: #4ade80;
+$text-shadow-dark: 0 1px 3px rgba(0, 0, 0, 0.8);
+$text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
+
 // Theme-Agnostic Design Variables
 $glass-blur: 12px;
 $glass-blur-strong: 20px;
@@ -70,14 +101,7 @@ $text-primary: #ffffff;
 $text-secondary: #e0e0e0;
 $text-accent: #4ade80;
 
-// High Contrast Colors (legacy variables mapped to CSS custom properties)
-$text-primary: #ffffff;
-$text-secondary: #e0e0e0;
-$text-accent: #4ade80;
-$text-shadow-dark: 0 1px 3px rgba(0, 0, 0, 0.8);
-$text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
-
-// Animated background mixin for both themes
+// Simplified dark background mixin
 @mixin animated-background() {
   background: var(--bg-gradient-1);
   z-index: -1;
@@ -94,7 +118,7 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
   }
 }
 
-// Main Pomodoro Container - Glass Design for Both Themes
+// Main Pomodoro Container - Dark High Contrast Glass Design
 .pomodoro-container {
   background: var(--glass-bg-vibrant);
   backdrop-filter: blur($glass-blur);
@@ -229,6 +253,10 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
       0 15px 50px rgba(220, 53, 69, 0.4),
       0 8px 25px rgba(0, 0, 20, 0.3);
   }
+
+  &:active {
+    transform: translateY(-1px) scale(0.98);
+  }
 }
 
 .btn-reset {
@@ -243,6 +271,10 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
     box-shadow:
       0 15px 50px rgba(158, 158, 158, 0.3),
       0 8px 25px rgba(0, 0, 20, 0.2);
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(0.98);
   }
 }
 
@@ -260,7 +292,6 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
   letter-spacing: 1px;
   text-shadow: var(--text-shadow-dark);
   font-weight: 600;
-  text-align: center;
 }
 
 .quick-select-buttons {
@@ -302,7 +333,7 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
   }
 
   &.active {
-    background: linear-gradient(45deg, #4ade80 0%, #80d0c7 100%);
+    background: linear-gradient(45deg, var(--text-accent) 0%, #80d0c7 100%);
     border-color: rgba(74, 222, 128, 0.5);
     animation: pulse-glow 2s ease-in-out infinite;
   }
@@ -346,6 +377,7 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
 
   [data-theme='light'] &::placeholder {
     color: rgba(26, 26, 46, 0.5);
+    text-shadow: none;
   }
 
   &:hover:not(:disabled) {
@@ -359,21 +391,8 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
   }
 
   &.custom-active {
-    background: linear-gradient(45deg, #80d0c7 0%, #4ade80 100%);
+    background: linear-gradient(45deg, #80d0c7 0%, var(--text-accent) 100%);
     border-color: rgba(128, 208, 199, 0.5);
-    animation: pulse-glow 2s ease-in-out infinite;
-    color: #000000;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-
-    &::placeholder {
-      color: rgba(0, 0, 0, 0.5);
-      text-shadow: none;
-    }
-  }
-
-  &.active {
-    background: linear-gradient(45deg, #4ade80 0%, #80d0c7 100%);
-    border-color: rgba(74, 222, 128, 0.5);
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
@@ -396,37 +415,6 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
   }
 }
 
-.pomodoro-footer {
-  text-align: center;
-  padding-top: 16px;
-  border-top: 1px solid var(--glass-border);
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.status {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  text-shadow: var(--text-shadow-dark);
-}
-
-.status-running {
-  color: var(--text-accent);
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
-}
-
-.status-stopped {
-  color: #ff6b6b;
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
-}
-
 .theme-toggle {
   padding: 8px;
   border: none;
@@ -447,6 +435,7 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
     background-color var(--transition-theme),
     border-color var(--transition-theme);
   position: relative;
+  margin-left: 8px;
 
   &:hover {
     transform: scale(1.1);
@@ -469,27 +458,77 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
       color: var(--text-primary);
     }
   }
+}
 
-  // Sun icon animation
-  &:hover .sun-icon {
-    animation: rotate 20s linear infinite;
+.about-toggle {
+  padding: 8px;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    $transition-smooth,
+    background-color var(--transition-theme),
+    border-color var(--transition-theme);
+  position: relative;
+
+  &:hover {
+    transform: scale(1.1);
+    background: rgba(74, 222, 128, 0.1);
+    border-color: rgba(74, 222, 128, 0.3);
   }
 
-  // Moon icon animation
-  &:hover .moon-icon {
-    animation: pulse 2s ease-in-out infinite;
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    color: var(--text-secondary);
+    transition: $transition-quick;
   }
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.pomodoro-footer {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--glass-border);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
 
+.status {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-shadow: var(--text-shadow-dark);
+}
+
+.status-running {
+  color: var(--text-accent);
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+}
+
+.status-stopped {
+  color: #ff6b6b;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+}
+
+// Enhanced animations
 @keyframes pulse {
   0%,
   100% {
@@ -498,11 +537,6 @@ $text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
   50% {
     transform: scale(1.1);
   }
-}
-
-// Enhanced animations
-.timer-svg.timer-complete {
-  animation: pulse-glow 0.8s ease-in-out 4;
 }
 
 // Body background for extension

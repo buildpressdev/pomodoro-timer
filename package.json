@@ -15,7 +15,11 @@
     "popup",
     "manifest-v3"
   ],
-  "author": "",
+  "author": {
+    "name": "BuildPress",
+    "email": "hello@buildpress.dev",
+    "url": "https://buildpress.dev"
+  },
   "license": "MIT",
   "dependencies": {
     "react": "^18.2.0",

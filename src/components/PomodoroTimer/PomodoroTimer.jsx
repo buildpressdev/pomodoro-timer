@@ -213,6 +213,14 @@ const PomodoroTimer = () => {
   const themeColors = getThemeColors(theme);
   const formattedTime = formatTime(timeRemaining);
 
+  // Developer information
+  const developerInfo = {
+    name: 'BuildPress',
+    email: 'hello@buildpress.dev',
+    url: 'https://buildpress.dev',
+    version: '1.0.0',
+  };
+
   return (
     <div className="pomodoro-container">
       <div className="pomodoro-header">
@@ -358,6 +366,30 @@ const PomodoroTimer = () => {
             {isRunning ? 'Running' : 'Stopped'}
           </span>
         </div>
+
+        <button
+          className="about-toggle"
+          onClick={() => {
+            // Simple about info (in real implementation, this would open an about modal)
+            alert(
+              `Pomodoro Timer v${developerInfo.version}\n\nCreated by ${developerInfo.name}\nContact: ${developerInfo.email}\nWebsite: ${developerInfo.url}`
+            );
+          }}
+          aria-label="About developer"
+          title="Developer information and support"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 2v20M17 7l-5 5 5v6h10v-6l5-5z" />
+          </svg>
+        </button>
 
         <button
           className="theme-toggle"
