@@ -22,10 +22,7 @@
   "background": {
     "service_worker": "index.js"
   },
-  "permissions": [
-    "storage",
-    "notifications",
-    "alarms"
-  ],
+  "permissions": ["storage", "notifications", "alarms"],
+
   "host_permissions": []
 }
