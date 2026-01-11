@@ -26,42 +26,14 @@ $transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 $transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 $transition-quick: all 0.2s ease;
 
-// Animated background mixin
+// Simplified background mixin
 @mixin animated-background() {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: $gradient-vibrant-1;
+  background: linear-gradient(135deg, 
+    rgba(255, 119, 230, 0.08) 0%, 
+    rgba(119, 119, 255, 0.05) 50%, 
+    rgba(255, 119, 180, 0.08) 100%
+  );
   z-index: -1;
-  
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.6;
-  }
-  
-  &::before {
-    width: 300px;
-    height: 300px;
-    background: rgba(255, 119, 230, 0.3);
-    top: -150px;
-    right: -100px;
-    animation: float-1 20s infinite ease-in-out;
-  }
-  
-  &::after {
-    width: 400px;
-    height: 400px;
-    background: rgba(119, 119, 255, 0.3);
-    bottom: -200px;
-    left: -150px;
-    animation: float-2 25s infinite ease-in-out;
-  }
 }
 
 // Animations
@@ -83,38 +55,23 @@ $transition-quick: all 0.2s ease;
   50% { box-shadow: 0 0 40px rgba(255, 119, 230, 0.6); }
 }
 
-// Main Pomodoro Container - Vibrant Glass Design
+// Main Pomodoro Container - Optimized Glass Design
 .pomodoro-container {
-  background: $glass-bg-vibrant;
-  backdrop-filter: blur($glass-blur-strong);
-  -webkit-backdrop-filter: blur($glass-blur-strong);
-  border-radius: 20px;
-  border: 1px solid $glass-border;
-  box-shadow: $glass-shadow-vibrant;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   transition: $transition-smooth;
   position: relative;
-  overflow: hidden;
-  width: 300px;
+  width: 280px;
+  min-width: 280px;
+  max-width: 300px;
   padding: 20px;
   margin: 0 auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  
-  // Glass glow effect
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, 
-      rgba(255, 119, 230, 0.1) 0%, 
-      rgba(119, 119, 255, 0.05) 100%
-    );
-    border-radius: inherit;
-    z-index: -1;
-    pointer-events: none;
-  }
+  z-index: 10;
 }
 
 .pomodoro-header {
@@ -129,12 +86,11 @@ $transition-quick: all 0.2s ease;
   color: white;
   font-size: 20px;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   background: linear-gradient(45deg, #ff77e6, #7777ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: pulse-glow 3s ease-in-out infinite;
 }
 
 .timer-display {
@@ -146,13 +102,15 @@ $transition-quick: all 0.2s ease;
 }
 
 .timer-svg {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: $transition-smooth;
+  position: relative;
+  z-index: 5;
   
   &:hover {
     transform: perspective(1000px) rotateX(5deg) scale(1.05);
@@ -168,7 +126,7 @@ $transition-quick: all 0.2s ease;
 
 .progress-circle {
   transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
-  filter: drop-shadow(0 0 10px rgba(255, 119, 230, 0.3));
+  filter: drop-shadow(0 0 8px rgba(255, 119, 230, 0.2));
 }
 
 .timer-controls {
@@ -181,7 +139,7 @@ $transition-quick: all 0.2s ease;
 
 .btn {
   flex: 1;
-  padding: 14px 20px;
+  padding: 12px 16px;
   border: none;
   font-size: 14px;
   font-weight: 600;
@@ -191,17 +149,14 @@ $transition-quick: all 0.2s ease;
   position: relative;
   overflow: hidden;
   
-  // Gradient background for buttons
-  background: linear-gradient(45deg, 
-    rgba(255, 119, 230, 0.2) 0%, 
-    rgba(119, 119, 255, 0.2) 100%
-  );
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  // Glass button styling
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   transition: $transition-smooth;
   
   // Shimmer effect
@@ -226,10 +181,11 @@ $transition-quick: all 0.2s ease;
   }
   
   &:hover {
-    transform: translateY(-3px) scale(1.05);
+    transform: translateY(-2px) scale(1.05);
     box-shadow: 
-      0 15px 50px rgba(255, 119, 230, 0.3),
-      0 8px 25px rgba(119, 119, 255, 0.2);
+      0 8px 24px rgba(255, 119, 230, 0.3),
+      0 4px 12px rgba(119, 119, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
   }
   
   &:active {
@@ -314,7 +270,7 @@ $transition-quick: all 0.2s ease;
 }
 
 .quick-btn {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: none;
   border-radius: 8px;
   font-size: 11px;
@@ -327,12 +283,12 @@ $transition-quick: all 0.2s ease;
   overflow: hidden;
   
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   
   &::before {
     content: '';
@@ -418,6 +374,7 @@ $transition-quick: all 0.2s ease;
 body {
   @include animated-background;
   min-height: 400px;
+  overflow-x: hidden;
 }
 
 // Responsive adjustments
