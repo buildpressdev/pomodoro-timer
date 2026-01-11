@@ -1,77 +1,67 @@
-// Glassmorphism Design Variables
-$glass-bg: rgba(255, 255, 255, 0.15);
-$glass-bg-vibrant: linear-gradient(135deg, 
-  rgba(255, 119, 230, 0.15) 0%, 
-  rgba(119, 119, 255, 0.15) 50%, 
-  rgba(255, 119, 180, 0.15) 100%
+// Dark Glassmorphism Design Variables - High Contrast Theme
+$glass-bg-dark: rgba(0, 0, 0, 0.25);
+$glass-bg-vibrant-dark: linear-gradient(135deg, 
+  rgba(0, 0, 20, 0.3) 0%, 
+  rgba(20, 0, 40, 0.25) 50%, 
+  rgba(0, 20, 80, 0.2) 100%
 );
 
-$glass-border: rgba(255, 255, 255, 0.3);
+$glass-border-dark: rgba(255, 255, 255, 0.1);
 $glass-blur: 12px;
 $glass-blur-strong: 20px;
-$glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-$glass-shadow-vibrant: 
-  0 8px 32px rgba(255, 119, 230, 0.1),
-  0 4px 16px rgba(119, 119, 255, 0.08),
-  0 2px 8px rgba(255, 119, 180, 0.05);
+$glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.4);
+$glass-shadow-dark-vibrant: 
+  0 8px 32px rgba(0, 0, 20, 0.2),
+  0 4px 16px rgba(20, 0, 40, 0.15),
+  0 2px 8px rgba(0, 20, 80, 0.1);
 
-// Gradient Backgrounds
-$gradient-vibrant-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-$gradient-vibrant-2: linear-gradient(120deg, #f093fb 0%, #f5576c 100%);
-$gradient-vibrant-3: linear-gradient(120deg, #fa709a 0%, #fee140 100%);
-$gradient-vibrant-4: linear-gradient(160deg, #0093E9 0%, #80D0C7 100%);
+// Dark Gradient Backgrounds
+$gradient-dark-1: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+$gradient-dark-2: linear-gradient(120deg, #1f1f3a 0%, #2d2d44 100%);
+$gradient-dark-3: linear-gradient(120deg, #16213e 0%, #1f2937 100%);
+$gradient-dark-4: linear-gradient(160deg, #0d1117 0%, #1a1a2e 100%);
 
 // Animation Timing
 $transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 $transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 $transition-quick: all 0.2s ease;
 
-// Simplified background mixin
-@mixin animated-background() {
-  background: linear-gradient(135deg, 
-    rgba(255, 119, 230, 0.08) 0%, 
-    rgba(119, 119, 255, 0.05) 50%, 
-    rgba(255, 119, 180, 0.08) 100%
-  );
+// High Contrast Colors
+$text-primary: #ffffff;
+$text-secondary: #e0e0e0;
+$text-accent: #4ade80;
+$text-shadow-dark: 0 1px 3px rgba(0, 0, 0, 0.8);
+$text-shadow-strong: 0 2px 5px rgba(0, 0, 0, 0.9);
+
+// Simplified dark background mixin
+@mixin animated-background-dark() {
+  background: $gradient-dark-1;
   z-index: -1;
 }
 
 // Animations
-@keyframes float-1 {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  33% { transform: translate(30px, -30px) rotate(120deg); }
-  66% { transform: translate(-20px, 20px) rotate(240deg); }
-}
-
-@keyframes float-2 {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(-20px, -10px) rotate(-90deg); }
-  50% { transform: translate(10px, 20px) rotate(180deg); }
-  75% { transform: translate(-15px, -15px) rotate(270deg); }
-}
-
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 119, 230, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(255, 119, 230, 0.6); }
+  0%, 100% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(74, 222, 128, 0.6); }
 }
 
-// Main Pomodoro Container - Optimized Glass Design
+// Main Pomodoro Container - Dark High Contrast Glass Design
 .pomodoro-container {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: $glass-bg-vibrant-dark;
+  backdrop-filter: blur($glass-blur);
+  -webkit-backdrop-filter: blur($glass-blur);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border: 1px solid $glass-border-dark;
+  box-shadow: $glass-shadow-dark-vibrant;
   transition: $transition-smooth;
   position: relative;
-  width: 280px;
-  min-width: 280px;
-  max-width: 300px;
+  width: 100%;
+  max-width: 320px;
   padding: 20px;
   margin: 0 auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   z-index: 10;
+  box-sizing: border-box;
 }
 
 .pomodoro-header {
@@ -83,11 +73,11 @@ $transition-quick: all 0.2s ease;
 
 .pomodoro-header h3 {
   margin: 0;
-  color: white;
+  color: $text-primary;
   font-size: 20px;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  background: linear-gradient(45deg, #ff77e6, #7777ff);
+  text-shadow: $text-shadow-strong;
+  background: linear-gradient(45deg, #4ade80, #80d0c7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -102,31 +92,20 @@ $transition-quick: all 0.2s ease;
 }
 
 .timer-svg {
-  background: rgba(255, 255, 255, 0.08);
+  background: $glass-bg-dark;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid $glass-border-dark;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: $transition-smooth;
   position: relative;
   z-index: 5;
-  
-  &:hover {
-    transform: perspective(1000px) rotateX(5deg) scale(1.05);
-    box-shadow: 
-      0 12px 40px rgba(255, 119, 230, 0.2),
-      0 6px 20px rgba(119, 119, 255, 0.15);
-  }
-  
-  &:active {
-    transform: scale(0.98);
-  }
 }
 
 .progress-circle {
   transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
-  filter: drop-shadow(0 0 8px rgba(255, 119, 230, 0.2));
+  filter: drop-shadow(0 0 8px rgba(0, 0, 20, 0.2));
 }
 
 .timer-controls {
@@ -148,101 +127,59 @@ $transition-quick: all 0.2s ease;
   letter-spacing: 0.8px;
   position: relative;
   overflow: hidden;
-  
-  // Glass button styling
-  background: rgba(255, 255, 255, 0.15);
+  background: $glass-bg-dark;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  border: 1px solid $glass-border-dark;
+  color: $text-primary;
+  text-shadow: $text-shadow-strong;
   transition: $transition-smooth;
-  
-  // Shimmer effect
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent
-    );
-    transition: $transition-quick;
-  }
-  
-  &:hover::before {
-    left: 100%;
-  }
+}
+
+.btn-start {
+  background: linear-gradient(45deg, 
+    rgba(74, 222, 128, 0.2) 0%, 
+    rgba(0, 0, 20, 0.2) 100%
+  );
   
   &:hover {
     transform: translateY(-2px) scale(1.05);
     box-shadow: 
-      0 8px 24px rgba(255, 119, 230, 0.3),
-      0 4px 12px rgba(119, 119, 255, 0.2);
-    background: rgba(255, 255, 255, 0.25);
+      0 15px 50px rgba(74, 222, 128, 0.4),
+      0 8px 25px rgba(0, 0, 20, 0.3);
   }
   
   &:active {
     transform: translateY(-1px) scale(0.98);
   }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    
-    &::before {
-      display: none;
-    }
-    
-    &:hover {
-      transform: none;
-      box-shadow: none;
-    }
-  }
-}
-
-.btn-start {
-  background: linear-gradient(45deg, 
-    rgba(76, 175, 80, 0.2) 0%, 
-    rgba(255, 119, 230, 0.2) 100%
-  );
-  
-  &:hover {
-    box-shadow: 
-      0 15px 50px rgba(76, 175, 80, 0.4),
-      0 8px 25px rgba(255, 119, 230, 0.3);
-  }
 }
 
 .btn-stop {
   background: linear-gradient(45deg, 
-    rgba(244, 67, 54, 0.2) 0%, 
-    rgba(255, 119, 119, 0.2) 100%
+    rgba(220, 53, 69, 0.2) 0%, 
+    rgba(0, 0, 20, 0.2) 100%
   );
   
   &:hover {
+    transform: translateY(-2px) scale(1.05);
     box-shadow: 
-      0 15px 50px rgba(244, 67, 54, 0.4),
-      0 8px 25px rgba(255, 119, 119, 0.3);
+      0 15px 50px rgba(220, 53, 69, 0.4),
+      0 8px 25px rgba(0, 0, 20, 0.3);
   }
 }
 
 .btn-reset {
   background: linear-gradient(45deg, 
     rgba(158, 158, 158, 0.2) 0%, 
-    rgba(119, 119, 255, 0.2) 100%
+    rgba(0, 0, 20, 0.2) 100%
   );
   
   &:hover {
+    transform: translateY(-2px) scale(1.05);
     box-shadow: 
       0 15px 50px rgba(158, 158, 158, 0.3),
-      0 8px 25px rgba(119, 119, 255, 0.2);
+      0 8px 25px rgba(0, 0, 20, 0.2);
   }
 }
 
@@ -254,11 +191,11 @@ $transition-quick: all 0.2s ease;
 
 .quick-select-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  color: $text-secondary;
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   font-weight: 600;
 }
 
@@ -281,88 +218,58 @@ $transition-quick: all 0.2s ease;
   transition: $transition-smooth;
   position: relative;
   overflow: hidden;
-  
-  background: rgba(255, 255, 255, 0.1);
+  background: $glass-bg-dark;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.15),
-      transparent
-    );
-    transition: $transition-quick;
-  }
+  border: 1px solid $glass-border-dark;
+  color: $text-primary;
+  text-shadow: $text-shadow-strong;
   
   &:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.1);
     background: linear-gradient(45deg, 
-      rgba(255, 119, 230, 0.25) 0%, 
-      rgba(119, 119, 255, 0.25) 100%
+      rgba(74, 222, 128, 0.25) 0%, 
+      rgba(0, 0, 20, 0.25) 100%
     );
-    
-    &::before {
-      left: 100%;
-    }
   }
   
   &.active {
-    background: linear-gradient(45deg, #4CAF50 0%, #2196F3 100%);
-    border-color: rgba(76, 175, 80, 0.5);
+    background: linear-gradient(45deg, #4ade80 0%, #80d0c7 100%);
+    border-color: rgba(74, 222, 128, 0.5);
     animation: pulse-glow 2s ease-in-out infinite;
   }
   
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-    
-    &::before {
-      display: none;
-    }
-    
-    &:hover {
-      transform: none;
-    }
   }
 }
 
 .pomodoro-footer {
   text-align: center;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid $glass-border-dark;
   position: relative;
   z-index: 1;
 }
 
 .status {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: $text-secondary;
   font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .status-running {
-  color: #4CAF50;
+  color: $text-accent;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
 }
 
 .status-stopped {
-  color: #f44336;
+  color: #ff6b6b;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
 }
 
 // Enhanced animations
@@ -372,7 +279,7 @@ $transition-quick: all 0.2s ease;
 
 // Body background for extension
 body {
-  @include animated-background;
+  @include animated-background-dark;
   min-height: 400px;
   overflow-x: hidden;
 }
@@ -380,17 +287,17 @@ body {
 // Responsive adjustments
 @media (max-width: 320px) {
   .pomodoro-container {
-    width: 280px;
+    width: 100%;
     padding: 16px;
   }
   
   .timer-svg {
-    width: 180px;
-    height: 180px;
+    width: 160px;
+    height: 160px;
   }
   
   .btn {
-    padding: 12px 16px;
+    padding: 10px 14px;
     font-size: 12px;
   }
 }

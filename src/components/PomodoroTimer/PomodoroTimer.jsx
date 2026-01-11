@@ -174,8 +174,8 @@ const PomodoroTimer = () => {
             dominantBaseline="middle"
             fontSize="28"
             fontWeight="bold"
-            fill="white"
-            textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
+            fill="#ffffff"
+            textShadow="0 2px 5px rgba(0, 0, 0, 0.8)"
           >
             {formattedTime}
           </text>
