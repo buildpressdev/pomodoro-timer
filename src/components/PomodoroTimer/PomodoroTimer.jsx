@@ -3,13 +3,12 @@ import {
   formatTime,
   calculateTimeFromAngle,
   calculateProgress,
-  getTimerColor,
   saveTimerState,
   loadTimerState,
   updateBadge,
   showNotification,
 } from '../../utils/timerUtils';
-import { getThemeColors, getTimerProgressColor } from '../../utils/themeColors';
+import { getTimerProgressColor } from '../../utils/themeColors';
 import './PomodoroTimer.scss';
 
 const PomodoroTimer = () => {
@@ -52,15 +51,6 @@ const PomodoroTimer = () => {
       updateBadge(state.timeRemaining);
     };
     loadState();
-  }, []);
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
   }, []);
 
   // Save state whenever it changes
@@ -128,7 +118,7 @@ const PomodoroTimer = () => {
       setDuration(newDuration);
       setTimeRemaining(newDuration * 60);
     },
-    [isRunning]
+    [isRunning, duration]
   );
 
   const handleStart = useCallback(() => {
@@ -210,16 +200,7 @@ const PomodoroTimer = () => {
 
   const progress = calculateProgress(timeRemaining, duration * 60);
   const timerColor = getTimerProgressColor(progress);
-  const themeColors = getThemeColors(theme);
   const formattedTime = formatTime(timeRemaining);
-
-  // Developer information
-  const developerInfo = {
-    name: 'BuildPress',
-    email: 'hello@buildpress.dev',
-    url: 'https://buildpress.dev',
-    version: '1.0.0',
-  };
 
   return (
     <div className="pomodoro-container">
@@ -237,7 +218,6 @@ const PomodoroTimer = () => {
           onClick={handleCircleClick}
           style={{ cursor: isRunning ? 'default' : 'pointer' }}
         >
-          {/* Background circle */}
           <circle
             cx="110"
             cy="110"
@@ -246,8 +226,6 @@ const PomodoroTimer = () => {
             stroke="rgba(255, 255, 255, 0.1)"
             strokeWidth="8"
           />
-
-          {/* Progress circle */}
           <circle
             cx="110"
             cy="110"
@@ -261,8 +239,6 @@ const PomodoroTimer = () => {
             transform="rotate(-90 110 110)"
             className="progress-circle"
           />
-
-          {/* Time text */}
           <text
             x="110"
             y="110"
@@ -271,16 +247,15 @@ const PomodoroTimer = () => {
             fontSize={theme === 'light' ? '32' : '28'}
             fontWeight="bold"
             fill={theme === 'light' ? '#0f0f23' : '#ffffff'}
-            textShadow={
-              theme === 'light'
-                ? '0 1px 3px rgba(0, 0, 0, 0.2)'
-                : '0 2px 5px rgba(0, 0, 0, 0.8)'
-            }
+            style={{
+              textShadow:
+                theme === 'light'
+                  ? '0 1px 3px rgba(0, 0, 0, 0.2)'
+                  : '0 2px 5px rgba(0, 0, 0, 0.8)',
+            }}
           >
             {formattedTime}
           </text>
-
-          {/* Duration text when not running */}
           {!isRunning && (
             <text
               x="110"
@@ -293,12 +268,13 @@ const PomodoroTimer = () => {
                   ? 'rgba(0, 0, 0, 0.6)'
                   : 'rgba(255, 255, 255, 0.8)'
               }
-              textShadow={
-                theme === 'light'
-                  ? '0 1px 2px rgba(0, 0, 0, 0.1)'
-                  : '0 1px 2px rgba(0, 0, 0, 0.3)'
-              }
-            ></text>
+              style={{
+                textShadow:
+                  theme === 'light'
+                    ? '0 1px 2px rgba(0, 0, 0, 0.1)'
+                    : '0 1px 2px rgba(0, 0, 0, 0.3)',
+              }}
+            />
           )}
         </svg>
       </div>
@@ -317,7 +293,6 @@ const PomodoroTimer = () => {
             {timeRemaining === 0 ? 'Start' : 'Start'}
           </button>
         )}
-
         <button onClick={handleReset} className="btn btn-reset">
           Reset
         </button>
@@ -343,7 +318,6 @@ const PomodoroTimer = () => {
               {mins}m
             </button>
           ))}
-
           <input
             type="text"
             value={customDuration}
@@ -368,44 +342,6 @@ const PomodoroTimer = () => {
         </div>
 
         <button
-          className="about-toggle"
-          onClick={() => {
-            // Professional about modal with system message
-            alert(`Pomodoro Timer v${developerInfo.version}
-
-${developerInfo.name} Extension
-
-📋 Operational Status: Plan → Build
-
-After completing your Pomodoro timer session, you're now in production mode.
-
-✨ Timer is ready for submission to the Chrome Web Store!
-🛠 Extension is no longer in development mode.
-🔧 Build optimizations and production configurations are active.
-
-Created by: ${developerInfo.name}
-Contact: ${developerInfo.email}
-Website: ${developerInfo.url}
-
-Thank you for using Pomodoro Timer! 🍅`);
-          }}
-          aria-label="About developer"
-          title="Developer information and support"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 2v20M17 7l-5 5 5v6h10v-6l5-5z" />
-          </svg>
-        </button>
-
-        <button
           className="theme-toggle"
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
@@ -419,10 +355,9 @@ Thank you for using Pomodoro Timer! 🍅`);
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
+            strokeWidth="2"
           >
             {theme === 'dark' ? (
-              // Sun icon
               <g>
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" y1="1" x2="12" y2="3" />
@@ -435,7 +370,6 @@ Thank you for using Pomodoro Timer! 🍅`);
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
               </g>
             ) : (
-              // Moon icon
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             )}
           </svg>
